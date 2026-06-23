@@ -1,8 +1,13 @@
+#include <linux/cdev.h>
+#include <linux/device.h>
+#include <linux/fs.h> 
 #include <linux/jhash.h>
 #include <linux/module.h>
 #include <linux/rcupdate.h>
 #include <linux/rhashtable.h>
 #include <linux/spinlock.h>
+
+#include "driver-commands.h"
 
 #define MAX_LEN_STR 64
 
@@ -18,3 +23,12 @@ int remove_critical_euid(char*);
 int add_critical_pn(char*);
 int remove_critical_pn(char*);
 int is_critical(int, char*, char*);
+
+// Driver
+int setup_driver(void);
+void cleanup_driver(void);
+
+// Throttling
+void enable_throttling(void);
+void disable_throttling(void);
+int is_throttling_enabled(void);

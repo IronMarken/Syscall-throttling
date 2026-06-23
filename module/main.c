@@ -12,7 +12,13 @@ static int __init lkm_init(void) {
     ret = setup_monitoring_data();
     if (ret == 0) {
         printk(KERN_INFO "[%s]: Monitoring data setup completed\n", MODNAME);
-    } 
+    }
+    
+    // Setup driver
+    ret = setup_driver();
+    if (ret == 0) {
+        printk(KERN_INFO "[%s]: Driver setup completed\n", MODNAME);
+    }
 
     printk(KERN_INFO "[%s]: Module setup completed\n", MODNAME);
 
@@ -25,6 +31,10 @@ static void __exit lkm_exit(void) {
     cleanup_monitoring_data();
     printk(KERN_INFO "[%s]: Monitoring data cleanup completed\n", MODNAME);
     
+    // Cleanup driver
+    cleanup_driver();
+    printk(KERN_INFO "[%s]: Driver cleanup completed\n", MODNAME);
+
     printk(KERN_INFO "[%s]: Module cleanup completed\n", MODNAME); 
 }
 
