@@ -15,23 +15,6 @@ struct hash_struct euid_data;
 // Program name hash struct
 struct hash_struct comm_data;
 
-struct int_node {
-    int int_key;
-    struct rhash_head node;
-    struct rcu_head rcu;
-};
-
-struct str_node {
-    char str_key[MAX_LEN_STR];
-    struct rhash_head node;
-    struct rcu_head rcu;
-};
-
-struct hash_struct {
-    struct rhashtable hashtable;
-    spinlock_t lock;
-};
-
 static struct rhashtable_params int_params = {
     .head_offset = offsetof(struct int_node, node),
     .key_offset = offsetof(struct int_node, int_key),

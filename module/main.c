@@ -23,6 +23,12 @@ static int __init lkm_init(void) {
         printk(KERN_INFO "[%s]: Driver setup completed\n", MODNAME);
     }
 
+    // Setup proc logger
+    ret = setup_logger();
+    if (ret == 0) {
+        printk(KERN_INFO "[%s]: Proc logger setup completed\n", MODNAME);
+    }
+
     printk(KERN_INFO "[%s]: Module setup completed\n", MODNAME);
 
     return 0;
@@ -37,6 +43,10 @@ static void __exit lkm_exit(void) {
     // Cleanup driver
     cleanup_driver();
     printk(KERN_INFO "[%s]: Driver cleanup completed\n", MODNAME);
+
+    // Cleanup proc logger
+    cleanup_logger();
+    printk(KERN_INFO "[%s]: Proc logger cleanup completed\n", MODNAME);
 
     printk(KERN_INFO "[%s]: Module cleanup completed\n", MODNAME); 
 }

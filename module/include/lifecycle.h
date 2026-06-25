@@ -9,4 +9,8 @@ void cleanup_monitoring_data(void);
 int setup_driver(void);
 void cleanup_driver(void);
 
+// Proc logger
+int setup_logger(void);
+void cleanup_logger(void);
+
 #endif

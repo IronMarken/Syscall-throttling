@@ -1,4 +1,4 @@
-syscall-throttling-objs := monitoring-data.o main.o driver.o throttling.o
+syscall-throttling-objs := monitoring-data.o main.o driver.o throttling.o proc-logger.o
 obj-m := syscall-throttling.o
 
 PWD := $(shell pwd)

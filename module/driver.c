@@ -27,7 +27,7 @@ static long ioctl_op(struct file *file, unsigned int cmd, unsigned long arg) {
     // Only update op
     // Check euid
     if (!uid_eq(current_euid(), GLOBAL_ROOT_UID)) {
-        printk(KERN_ERR "[%s]: eUID operation error\n", MODNAME);
+        printk(KERN_ERR "[%s]: EUID operation error\n", MODNAME);
         return -EPERM;
     }
 
