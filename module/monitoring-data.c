@@ -1,4 +1,12 @@
-#include "sys-throttling.h"
+#include <linux/module.h>
+#include <linux/jhash.h>
+#include <linux/rcupdate.h>
+#include <linux/rhashtable.h>
+#include <linux/spinlock.h>
+
+#include "common.h"
+#include "lifecycle.h" 
+#include "monitoring_data.h"
 
 // Syscall hash struct
 struct hash_struct sn_data;

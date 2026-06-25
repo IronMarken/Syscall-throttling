@@ -1,3 +1,6 @@
+#ifndef DRIVER_COMMANDS_H
+#define DRIVER_COMMANDS_H
+
 #define DEV_NAME "throttling"
 #define IOCTL_MAGIC 'M'
 #define IOCTL_ENABLE_THROTTLING _IO(IOCTL_MAGIC, 1)
@@ -8,3 +11,5 @@
 #define IOCTL_UNREGISTER_EUID _IOW(IOCTL_MAGIC, 6, char*)
 #define IOCTL_REGISTER_PN _IOW(IOCTL_MAGIC, 7, char*)
 #define IOCTL_UNREGISTER_PN _IOW(IOCTL_MAGIC, 8, char*)
+
+#endif

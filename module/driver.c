@@ -1,4 +1,12 @@
-#include "sys-throttling.h"
+#include <linux/cdev.h>
+#include <linux/device.h>
+#include <linux/fs.h> 
+
+#include "common.h"
+#include "driver_commands.h"
+#include "lifecycle.h"
+#include "monitoring_data.h" 
+#include "throttling.h"
 
 static dev_t dev_numbers;
 static struct cdev chr_dev;
@@ -36,11 +44,13 @@ static long ioctl_op(struct file *file, unsigned int cmd, unsigned long arg) {
     // Check op
     switch (cmd) {
         case IOCTL_ENABLE_THROTTLING:
-            enable_throttling();
+            atomic_set(&enabled, 1);
+            printk(KERN_INFO "[%s]: Throttling enabled\n", MODNAME);
             break;
 
         case IOCTL_DISABLE_THROTTLING:
-            disable_throttling();
+            atomic_set(&enabled, 0);
+            printk(KERN_INFO "[%s]: Throttling disabled\n", MODNAME);
             break;
 
         case IOCTL_REGISTER_SN:

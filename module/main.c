@@ -1,4 +1,7 @@
-#include "sys-throttling.h"
+#include <linux/module.h>
+
+#include "common.h"
+#include "lifecycle.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Marco Ferri");

@@ -3,7 +3,7 @@ obj-m := syscall-throttling.o
 
 PWD := $(shell pwd)
 
-EXTRA_CFLAGS += -I$(PWD)
+ccflags-y += -I$(PWD)/include
 
 compile:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
