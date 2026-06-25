@@ -130,6 +130,16 @@ static long ioctl_op(struct file *file, unsigned int cmd, unsigned long arg) {
             if (ret)
                 return ret;
             break;
+        case IOCTL_SET_MAX_RATE:
+            // Read input
+            if (copy_from_user(&uval, (int __user *)arg, sizeof(uval))) {
+                printk(KERN_ERR "[%s]: Input reading error\n", MODNAME);
+                return -EFAULT;
+            }
+
+            atomic_set(&max_rate, uval);
+            printk(KERN_INFO "[%s]: Max rate updated\n", MODNAME);
+            break;
             
         default:
             return -EINVAL;
