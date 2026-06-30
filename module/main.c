@@ -16,6 +16,12 @@ static int __init lkm_init(void) {
     if (ret == 0) {
         printk(KERN_INFO "[%s]: Monitoring data setup completed\n", MODNAME);
     }
+
+    // Setup throttling
+    ret = setup_throttling();
+    if (ret==0) {
+         printk(KERN_INFO "[%s]: Throttling setup completed\n", MODNAME);
+    }
     
     // Setup driver
     ret = setup_driver();
@@ -36,10 +42,6 @@ static int __init lkm_init(void) {
 
 
 static void __exit lkm_exit(void) {
-    // Cleanup monitoring data
-    cleanup_monitoring_data();
-    printk(KERN_INFO "[%s]: Monitoring data cleanup completed\n", MODNAME);
-    
     // Cleanup driver
     cleanup_driver();
     printk(KERN_INFO "[%s]: Driver cleanup completed\n", MODNAME);
@@ -47,6 +49,14 @@ static void __exit lkm_exit(void) {
     // Cleanup proc logger
     cleanup_logger();
     printk(KERN_INFO "[%s]: Proc logger cleanup completed\n", MODNAME);
+    
+    // Cleanup throttling
+    cleanup_throttling();
+    printk(KERN_INFO "[%s]: Throttling cleanup completed\n", MODNAME);
+
+    // Cleanup monitoring data
+    cleanup_monitoring_data();
+    printk(KERN_INFO "[%s]: Monitoring data cleanup completed\n", MODNAME);
 
     printk(KERN_INFO "[%s]: Module cleanup completed\n", MODNAME); 
 }

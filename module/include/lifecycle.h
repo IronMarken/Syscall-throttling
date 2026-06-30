@@ -13,4 +13,8 @@ void cleanup_driver(void);
 int setup_logger(void);
 void cleanup_logger(void);
 
+// Probing
+int setup_throttling(void);
+void cleanup_throttling(void);
+
 #endif
