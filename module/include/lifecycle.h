@@ -17,4 +17,7 @@ void cleanup_logger(void);
 int setup_throttling(void);
 void cleanup_throttling(void);
 
+// Metrics
+void setup_metrics(void);
+
 #endif

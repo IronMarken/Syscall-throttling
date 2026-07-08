@@ -2,9 +2,11 @@
 #include <linux/proc_fs.h>
 #include <linux/rhashtable.h>
 #include <linux/seq_file.h>
+#include <linux/smp.h>
 
 #include "common.h"
 #include "lifecycle.h"
+#include "metrics.h"
 #include "monitoring_data.h"
 #include "throttling.h"
 
@@ -24,6 +26,68 @@ static int status_open(struct inode *inode, struct file *file) {
 
 static const struct proc_ops status_ops = {
     .proc_open = status_open,
+    .proc_read = seq_read,
+    .proc_lseek = seq_lseek,
+    .proc_release = single_release,
+};
+
+// Show for metrics
+static int metrics_show(struct seq_file *sf, void *v) {
+    seq_printf(sf, "(-) Throttler metrics:\n");
+    
+    spin_lock(&metrics_lock);
+    seq_printf(sf, "\t(*) MAX number of blocked threads within an epoch: %d\n", max_num_blocked);
+    seq_printf(sf, "\t(*) AVG number of blocked threads: %d.%d\n", avg_blocked_x1000/1000, avg_blocked_x1000%1000);
+    spin_unlock(&metrics_lock);
+
+    s64 max_sleep_time = -1;
+    int max_sn;
+    char max_pn[MAX_LEN_STR];
+    char max_euid[MAX_LEN_STR];
+
+    // Find global max
+    int cpu;
+    int seq_nr;
+    seqcount_t *seq_number_ptr;
+    struct max_sleep *local_max;
+
+    for_each_possible_cpu(cpu) {
+
+        do {            
+            // Sync
+            seq_number_ptr = per_cpu_ptr(&seq_number, cpu);
+            seq_nr = read_seqcount_begin(seq_number_ptr);
+
+            // Get local max
+            local_max = per_cpu_ptr(&per_cpu_max, cpu);
+
+            // Compare global max
+            if (local_max->sleep_time > max_sleep_time) {
+                max_sleep_time = local_max->sleep_time;
+                max_sn = local_max->sn;
+                strcpy(max_pn, local_max->pn);
+                strcpy(max_euid, local_max->euid);
+            }
+
+        } while(read_seqcount_retry(seq_number_ptr, seq_nr));
+    }
+
+    seq_printf(sf, "\t(*) MAX sleep time is %lld ms for:\n", max_sleep_time);
+    seq_printf(sf, "\t\t(**) Syscall number: %d\n", max_sn);
+    seq_printf(sf, "\t\t(**) Program name: %s\n", max_pn);
+    seq_printf(sf, "\t\t(**) eUID: %s\n", max_euid);
+
+
+
+    return 0;
+}
+
+static int metrics_open(struct inode *inode, struct file *file) {
+    return single_open(file, metrics_show, NULL);
+}
+
+static const struct proc_ops metrics_ops = {
+    .proc_open = metrics_open,
     .proc_read = seq_read,
     .proc_lseek = seq_lseek,
     .proc_release = single_release,
@@ -151,6 +215,12 @@ int setup_logger(void) {
     // Create status file
     if (!proc_create("status", 0444, root_dir, &status_ops)) {
         printk(KERN_ERR "[%s]: Error generating status file\n", MODNAME);
+        goto err;
+    }
+
+    // Create metrics file
+    if (!proc_create("metrics", 0444, root_dir, &metrics_ops)) {
+        printk(KERN_ERR "[%s]: Error generating metrics file\n", MODNAME);
         goto err;
     }
 

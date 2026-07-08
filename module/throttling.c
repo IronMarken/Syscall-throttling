@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "lifecycle.h"
+#include "metrics.h"
 #include "monitoring_data.h"
 #include "throttling.h"
 
@@ -21,7 +22,7 @@ DEFINE_PER_CPU(unsigned long *, kprobe_ctx_pointer);
 static struct kprobe setup_kprobe;
 static struct kprobe throttle_kprobe;
 static atomic_t lookup_counter = ATOMIC_INIT(0);
-static atomic_t presence_counter = ATOMIC_INIT(0);
+atomic_t presence_counter = ATOMIC_INIT(0);
 
 // Sleep-Awake data
 static struct wait_queue_head sleeping_queue;
@@ -87,7 +88,10 @@ static int __kprobes throttle(struct kprobe *p, struct pt_regs *regs) {
 
             // Presence counter for module cleanup
             atomic_inc(&presence_counter);
-        
+            
+            // Sleep start time
+            ktime_t sleep_start = ktime_get();
+
             // Blocking probe ctx
             *kprobe_ctx_ptr = (unsigned long)NULL;
             preempt_enable();
@@ -101,6 +105,29 @@ static int __kprobes throttle(struct kprobe *p, struct pt_regs *regs) {
             *kprobe_ctx_ptr = (unsigned long) p;
 
             atomic_dec(&presence_counter);
+
+            // Sleep end time
+            ktime_t sleep_end = ktime_get();
+
+            // Sleep time in ms
+            s64 sleeping_time = ktime_to_ms(ktime_sub(sleep_end, sleep_start));
+        
+            // Check local max
+            struct max_sleep *entity = this_cpu_ptr(&per_cpu_max);
+            seqcount_t *seq_number_ptr = this_cpu_ptr(&seq_number);
+            if (sleeping_time > entity->sleep_time) {
+                // Sync
+                write_seqcount_begin(seq_number_ptr);
+
+                // Update values
+                entity->sleep_time = sleeping_time;
+                entity->sn = syscall_nr;
+                strcpy(entity->pn, comm);
+                strcpy(entity->euid, euid_s);
+
+                write_seqcount_end(seq_number_ptr);
+            }
+        
         }
     }
     return 0;
@@ -110,6 +137,11 @@ static void window_callback(struct timer_list *t) {
     // Reset limit
     atomic_set(&limit_counter, atomic_read(&max_rate));
 
+    // Update metrics if enabled
+    if (atomic_read(&enabled)) {
+        update_metrics();
+    }
+    
     // Wake up all
     wake_up_interruptible(&sleeping_queue);
 

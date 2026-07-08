@@ -20,8 +20,12 @@ static int __init lkm_init(void) {
     // Setup throttling
     ret = setup_throttling();
     if (ret==0) {
-         printk(KERN_INFO "[%s]: Throttling setup completed\n", MODNAME);
+        printk(KERN_INFO "[%s]: Throttling setup completed\n", MODNAME);
     }
+
+    // Setup metrics
+    setup_metrics();
+    printk(KERN_INFO "[%s]: Metrics setup completed\n", MODNAME);
     
     // Setup driver
     ret = setup_driver();

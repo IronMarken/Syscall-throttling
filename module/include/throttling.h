@@ -5,5 +5,6 @@
 
 extern atomic_t enabled;
 extern atomic_t max_rate;
+extern atomic_t presence_counter;
 
 #endif
