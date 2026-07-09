@@ -179,7 +179,7 @@ void exec_command(int argc, char *argv[]) {
                 if (int_val >= 0)
                     ioctl(fd, IOCTL_SET_MAX_RATE, &int_val);
                 else
-                    printf("Can't set a negative max rate");
+                    printf("Can't set a negative max rate\n");
                 break;
             default:
                 // Never executed. Args already checked 
